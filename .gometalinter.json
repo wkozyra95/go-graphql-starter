@@ -1,0 +1,4 @@
+{
+    "Disable": ["maligned", "aligncheck"],
+    "Exclude": ["^vendor/"]
+}
