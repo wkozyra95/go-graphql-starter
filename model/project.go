@@ -10,4 +10,10 @@ type Project struct {
 	ID bson.ObjectId `json:"id" bson:"_id"`
 	// UserID ...
 	UserID bson.ObjectId `json:"userId" bson:"userId"`
+
+	// Name ...
+	Name string `json:"name" bson:"name"`
+
+	// Description ...
+	Description string `json:"description" bson:"description"`
 }

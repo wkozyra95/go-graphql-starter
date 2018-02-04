@@ -31,14 +31,14 @@ elif [ "$1" = "test" ]; then
 elif [ "$1" = "run" ]; then
     cd $SCRIPT_PATH
     ensureStartDB
-    export DB_URL=mongodb://localhost:27017/mongodb
+    export DB_URL=mongodb://localhost:27017/go-graphql-starter
     export BACKEND_PORT=3000
     go run main.go
 
 elif [ "$1" = "run:dev" ]; then
     cd $SCRIPT_PATH
     ensureStartDB
-    export DB_URL=mongodb://localhost:27017/mongodb
+    export DB_URL=mongodb://localhost:27017/go-graphql-starter
     export BACKEND_PORT=3001
     gin
 

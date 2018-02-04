@@ -9,6 +9,7 @@ import (
 	"github.com/dgrijalva/jwt-go"
 	conf "github.com/wkozyra95/go-graphql-starter/config"
 	"github.com/wkozyra95/go-graphql-starter/errors"
+	"github.com/wkozyra95/go-graphql-starter/web/schema"
 	"gopkg.in/mgo.v2/bson"
 )
 
@@ -34,14 +35,19 @@ func newJwtProvider(config conf.Config) (jwtProvider, error) {
 	}, nil
 }
 
-func (jp jwtProvider) generate(id bson.ObjectId) (string, error) {
+func (jp jwtProvider) GenerateToken(id bson.ObjectId) string {
 	token := jwt.New(jwt.SigningMethodHS256)
 	claims := token.Claims.(jwt.MapClaims)
 
 	claims["id"] = id
 	claims["exp"] = time.Now().Add(time.Hour * 24).Unix()
 
-	return token.SignedString(jp.jwtKey)
+	signedToken, signErr := token.SignedString(jp.jwtKey)
+	if signErr != nil {
+		log.Error("[ASSERT] Unable to sign token")
+		return ""
+	}
+	return signedToken
 }
 
 func (jp jwtProvider) middleware(next http.Handler) http.Handler {
@@ -50,6 +56,8 @@ func (jp jwtProvider) middleware(next http.Handler) http.Handler {
 		token := r.Header.Get(jp.header)
 		if token == "" {
 			log.Info("Missing auth token")
+			next.ServeHTTP(w, r)
+			return
 			_ = writeJSONResponse(w, http.StatusUnauthorized, map[string]string{
 				"reason": errors.ErrNotLoggedIn,
 			})
@@ -61,6 +69,8 @@ func (jp jwtProvider) middleware(next http.Handler) http.Handler {
 		})
 		if validationErr, ok := parseErr.(*jwt.ValidationError); ok &&
 			validationErr.Errors&jwt.ValidationErrorExpired != 0 {
+			next.ServeHTTP(w, r)
+			return
 			log.Warn("token expired")
 			_ = writeJSONResponse(w, http.StatusUnauthorized, map[string]string{
 				"reason": errors.ErrExpired,
@@ -69,6 +79,8 @@ func (jp jwtProvider) middleware(next http.Handler) http.Handler {
 		}
 		if parseErr != nil {
 			log.Warn("Unable to parse token")
+			next.ServeHTTP(w, r)
+			return
 			_ = writeJSONResponse(w, http.StatusUnauthorized, map[string]string{
 				"reason": errors.ErrMalformed,
 			})
@@ -78,13 +90,15 @@ func (jp jwtProvider) middleware(next http.Handler) http.Handler {
 		claims, assertTypeOk := parsed.Claims.(jwt.MapClaims)
 		if !parsed.Valid || !assertTypeOk {
 			log.Warn("Token is not valid")
+			next.ServeHTTP(w, r)
+			return
 			_ = writeJSONResponse(w, http.StatusUnauthorized, map[string]string{
 				"reason": errors.ErrMalformed,
 			})
 			return
 		}
 
-		idKey := contextUserID
+		idKey := schema.CurrentUserKey
 		idVal := claims["id"]
 
 		ctx := context.WithValue(r.Context(), idKey, idVal)
