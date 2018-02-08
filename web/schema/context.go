@@ -33,8 +33,8 @@ func extractUserIdContext(ctx context.Context) bson.ObjectId {
 		return ""
 	}
 	userId, assertOk := userIdObj.(bson.ObjectId)
-	if assertOk {
-		log.Error("[ASSERT] Wrong type for userId in context")
+	if !assertOk {
+		log.Error("[ASSERT] Wrong type for userId in contex [%+v]", userIdObj)
 		debug.PrintStack()
 	}
 	return userId

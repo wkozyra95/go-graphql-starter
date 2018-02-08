@@ -24,19 +24,15 @@ var schema = `
 	type Query {
 		user(username: String!): User
 		project(id: String!): Project
+		projects: [Project!]!
 	}
 	# Mutation
 	type Mutation {
 		authLogin(loginForm: LoginForm!): LoginResponse!
-		authRegister(registerForm: RegisterForm!): Boolean!
+		authRegister(registerForm: RegisterForm!): User!
+		projectCreate(projectInput: ProjectCreateInput!): Project!
 	}
-	# User
-	type User {
-		id: String!
-		username: String!
-		email: String!
-		projects: [Project!]!
-	}
+
 	# Project
 	type Project {
 		id: String!
@@ -44,17 +40,30 @@ var schema = `
 		description: String!
 		user: User!
 	}
+	# ProjectCreateInput
+	input ProjectCreateInput {
+		name: String!
+		description: String!
+	}
+
+	# User
+	type User {
+		id: String!
+		username: String!
+		email: String!
+		projects: [Project!]!
+	}
 	# LoginForm
 	input LoginForm {
 		username: String!
 		password: String!
 	}
-	# LoginResponse
+	# UserLoginResponse
 	type LoginResponse {
 		token: String!
 		user: User!
 	}
-	# RegisterForm
+	# UserRegisterForm
 	input RegisterForm {
 		email: String!,
 		username: String!,

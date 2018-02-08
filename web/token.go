@@ -8,7 +8,7 @@ import (
 
 	"github.com/dgrijalva/jwt-go"
 	conf "github.com/wkozyra95/go-graphql-starter/config"
-	"github.com/wkozyra95/go-graphql-starter/errors"
+	"github.com/wkozyra95/go-graphql-starter/model/db"
 	"github.com/wkozyra95/go-graphql-starter/web/schema"
 	"gopkg.in/mgo.v2/bson"
 )
@@ -23,6 +23,7 @@ type jwtProvider struct {
 }
 
 func newJwtProvider(config conf.Config) (jwtProvider, error) {
+	log.Info("Create jwtProvider")
 	const keySize = 64
 	jwtKey := make([]byte, keySize)
 	_, err := rand.Read(jwtKey)
@@ -30,17 +31,18 @@ func newJwtProvider(config conf.Config) (jwtProvider, error) {
 		return jwtProvider{}, err
 	}
 	return jwtProvider{
-		jwtKey: jwtKey,
+		jwtKey: []byte("ewjfhbweruhf"),
 		header: "X-Auth-Token",
 	}, nil
 }
 
 func (jp jwtProvider) GenerateToken(id bson.ObjectId) string {
+	log.Debugf("GenerateToken [%s]", id.Hex())
 	token := jwt.New(jwt.SigningMethodHS256)
 	claims := token.Claims.(jwt.MapClaims)
 
 	claims["id"] = id
-	claims["exp"] = time.Now().Add(time.Hour * 24).Unix()
+	claims["exp"] = time.Now().Add(time.Hour * 2400).Unix()
 
 	signedToken, signErr := token.SignedString(jp.jwtKey)
 	if signErr != nil {
@@ -58,10 +60,6 @@ func (jp jwtProvider) middleware(next http.Handler) http.Handler {
 			log.Info("Missing auth token")
 			next.ServeHTTP(w, r)
 			return
-			_ = writeJSONResponse(w, http.StatusUnauthorized, map[string]string{
-				"reason": errors.ErrNotLoggedIn,
-			})
-			return
 		}
 
 		parsed, parseErr := jwt.Parse(token, func(*jwt.Token) (interface{}, error) {
@@ -69,21 +67,13 @@ func (jp jwtProvider) middleware(next http.Handler) http.Handler {
 		})
 		if validationErr, ok := parseErr.(*jwt.ValidationError); ok &&
 			validationErr.Errors&jwt.ValidationErrorExpired != 0 {
+			log.Warnf("token expired [%s]", parseErr.Error())
 			next.ServeHTTP(w, r)
-			return
-			log.Warn("token expired")
-			_ = writeJSONResponse(w, http.StatusUnauthorized, map[string]string{
-				"reason": errors.ErrExpired,
-			})
 			return
 		}
 		if parseErr != nil {
-			log.Warn("Unable to parse token")
+			log.Warnf("Unable to parse token [%s]", parseErr.Error())
 			next.ServeHTTP(w, r)
-			return
-			_ = writeJSONResponse(w, http.StatusUnauthorized, map[string]string{
-				"reason": errors.ErrMalformed,
-			})
 			return
 		}
 
@@ -92,16 +82,19 @@ func (jp jwtProvider) middleware(next http.Handler) http.Handler {
 			log.Warn("Token is not valid")
 			next.ServeHTTP(w, r)
 			return
-			_ = writeJSONResponse(w, http.StatusUnauthorized, map[string]string{
-				"reason": errors.ErrMalformed,
-			})
+		}
+
+		converted, convertErr := db.ConvertToObjectId(claims["id"].(string))
+		if convertErr != nil {
+			next.ServeHTTP(w, r)
 			return
 		}
 
 		idKey := schema.CurrentUserKey
-		idVal := claims["id"]
+		idVal := converted
 
 		ctx := context.WithValue(r.Context(), idKey, idVal)
+		log.Debugf("Authenticated request for user [%s]", idVal)
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }

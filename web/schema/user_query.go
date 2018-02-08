@@ -12,5 +12,5 @@ func (r Resolver) User(
 		Username string
 	},
 ) (*userResolver, error) {
-	return &userResolver{Resolver: r, user: model.User{}}, nil
+	return &userResolver{user: &model.User{}}, nil
 }
