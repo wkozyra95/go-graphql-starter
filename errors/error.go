@@ -6,18 +6,18 @@ import (
 )
 
 var (
-	// NotFound error not found.
-	NotFound = fmt.Errorf("notfound")
+	// ErrNotFound error not found.
+	ErrNotFound = fmt.Errorf("notfound")
 	// ErrUnauthorized error unauthorized request.
-	Unauthorized = fmt.Errorf("unauthorized")
+	ErrUnauthorized = fmt.Errorf("unauthorized")
 	// ErrNotLoggedIn error not logged in.
-	NotLoggedIn = fmt.Errorf("notloggedin")
+	ErrNotLoggedIn = fmt.Errorf("notloggedin")
 	// ErrMalformed error malformed request.
-	Malformed = fmt.Errorf("malformed")
+	ErrMalformed = fmt.Errorf("malformed")
 	// ErrExpired token expired error.
-	Expired = fmt.Errorf("expired")
+	ErrExpired = fmt.Errorf("expired")
 	// ErrFormError form error.
-	FormError = fmt.Errorf("formerror")
+	ErrFormError = fmt.Errorf("formerror")
 	// ErrInternalServerError Internal Server Error.
-	InternalServerError = fmt.Errorf("internal")
+	ErrInternalServerError = fmt.Errorf("internal")
 )

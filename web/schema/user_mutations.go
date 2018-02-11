@@ -12,12 +12,13 @@ import (
 	"gopkg.in/mgo.v2/bson"
 )
 
+// AuthLogin ...
 func (r Resolver) AuthLogin(
 	context context.Context,
 	args struct {
 		LoginForm *loginForm
 	},
-) (*loginResponseResolver, error) {
+) (*LoginResponseResolver, error) {
 	db := extractDBSession(context)
 
 	if err := args.LoginForm.validate(); err != nil {
@@ -32,30 +33,33 @@ func (r Resolver) AuthLogin(
 		return nil, fmt.Errorf("Unknown combination of username and password")
 	}
 	if userErr != nil {
-		return nil, errors.InternalServerError
+		return nil, errors.ErrInternalServerError
 	}
 	if err := args.LoginForm.validatePassword(user.PasswordHash); err != nil {
 		return nil, err
 	}
 
 	token := r.GenerateToken(user.ID)
-	return &loginResponseResolver{
+	return &LoginResponseResolver{
 		token: token,
 		user:  &user,
 	}, nil
 }
 
-type loginResponseResolver struct {
+// LoginResponseResolver ...
+type LoginResponseResolver struct {
 	token string
 	user  *mongo.User
 }
 
-func (lr *loginResponseResolver) Token() string {
+// Token ...
+func (lr *LoginResponseResolver) Token() string {
 	return lr.token
 }
 
-func (lr *loginResponseResolver) User() *userResolver {
-	return &userResolver{user: lr.user}
+// User ...
+func (lr *LoginResponseResolver) User() *UserResolver {
+	return &UserResolver{user: lr.user}
 }
 
 type loginForm struct {
@@ -79,17 +83,18 @@ func (lf loginForm) validate() error {
 func (lf loginForm) validatePassword(hashedPassword string) error {
 	err := bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(lf.Password))
 	if err != nil {
-		return fmt.Errorf("Unknown combination of user and password.")
+		return fmt.Errorf("Unknown combination of user and password")
 	}
 	return nil
 }
 
+// AuthRegister ...
 func (r Resolver) AuthRegister(
 	context context.Context,
 	args struct {
 		RegisterForm *registerForm
 	},
-) (*userResolver, error) {
+) (*UserResolver, error) {
 	db := extractDBSession(context)
 
 	if err := args.RegisterForm.validate(); err != nil {
@@ -99,7 +104,7 @@ func (r Resolver) AuthRegister(
 	count, countErr := db.User().
 		Find(bson.M{"username": args.RegisterForm.Username}).Count()
 	if countErr != nil {
-		return nil, errors.InternalServerError
+		return nil, errors.ErrInternalServerError
 	}
 	if count > 0 {
 		return nil, fmt.Errorf("User with that username already exists")
@@ -108,9 +113,9 @@ func (r Resolver) AuthRegister(
 	user := args.RegisterForm.createUser()
 	insertErr := db.User().Insert(user)
 	if insertErr != nil {
-		return nil, errors.InternalServerError
+		return nil, errors.ErrInternalServerError
 	}
-	return &userResolver{user: &user}, nil
+	return &UserResolver{user: &user}, nil
 }
 
 type registerForm struct {

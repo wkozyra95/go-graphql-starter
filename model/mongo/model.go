@@ -5,6 +5,7 @@ import (
 	"gopkg.in/mgo.v2/bson"
 )
 
+// User ...
 type User struct {
 	// ID ...
 	ID bson.ObjectId `bson:"_id"`
@@ -12,6 +13,7 @@ type User struct {
 	model.User `bson:",inline"`
 }
 
+// Project ...
 type Project struct {
 	// ID ...
 	ID bson.ObjectId `bson:"_id"`

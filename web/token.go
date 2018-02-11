@@ -13,10 +13,6 @@ import (
 	"gopkg.in/mgo.v2/bson"
 )
 
-type contextKeyType string
-
-const contextUserID contextKeyType = "userID"
-
 type jwtProvider struct {
 	jwtKey []byte
 	header string

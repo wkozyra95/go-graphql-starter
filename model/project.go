@@ -12,6 +12,7 @@ type Project struct {
 	Details ProjectDetails `json:"details" bson:"details"`
 }
 
+// ProjectDetails ...
 type ProjectDetails struct {
 	// IsPublic ...
 	IsPublic bool `json:"isPublic" bson:"isPublic"`

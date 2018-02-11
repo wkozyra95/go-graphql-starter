@@ -34,7 +34,7 @@ func NewRouter(config conf.Config) (http.Handler, error) {
 		GenerateToken: jwt.GenerateToken,
 	}
 
-	schema, schemaErr := schema.SetupSchema(context)
+	parsedSchema, schemaErr := schema.SetupSchema(context)
 	if schemaErr != nil {
 		log.Errorf("Create schema failed with error [%s]", schemaErr.Error())
 		return nil, schemaErr
@@ -45,11 +45,11 @@ func NewRouter(config conf.Config) (http.Handler, error) {
 	router.Use(dbProvider(dbCreator).middleware)
 	router.Use(jwt.middleware)
 
-	handler := &relay.Handler{Schema: schema}
+	handler := &relay.Handler{Schema: parsedSchema}
 	router.Post("/relay", handler.ServeHTTP)
 	router.Post("/graphql", func(w http.ResponseWriter, r *http.Request) {
 		body, _ := ioutil.ReadAll(r.Body)
-		response := schema.Exec(
+		response := parsedSchema.Exec(
 			r.Context(),
 			string(body),
 			"",

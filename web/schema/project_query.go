@@ -10,12 +10,13 @@ import (
 	"github.com/wkozyra95/go-graphql-starter/model/mongo"
 )
 
+// Project ...
 func (r Resolver) Project(
 	ctx context.Context,
 	args struct {
 		ProjectID string
 	},
-) (*projectResolver, error) {
+) (*ProjectResolver, error) {
 	db := extractDBSession(ctx)
 	userID := extractUserID(ctx)
 
@@ -27,20 +28,21 @@ func (r Resolver) Project(
 	project := mongo.Project{}
 	dbErr := db.Project().FindID(projectID).One(&project)
 	if dbErr == mgo.ErrNotFound {
-		return nil, errors.NotFound
+		return nil, errors.ErrNotFound
 	}
 	if dbErr != nil {
-		return nil, errors.InternalServerError
+		return nil, errors.ErrInternalServerError
 	}
 	if project.UserID != userID {
-		return nil, errors.Unauthorized
+		return nil, errors.ErrUnauthorized
 	}
-	return &projectResolver{project: &project}, nil
+	return &ProjectResolver{project: &project}, nil
 }
 
+// Projects ...
 func (r Resolver) Projects(
 	context context.Context,
-) ([]*projectResolver, error) {
+) ([]*ProjectResolver, error) {
 	db := extractDBSession(context)
 	userID := extractUserID(context)
 
@@ -49,12 +51,12 @@ func (r Resolver) Projects(
 		mongo.UserForeignKey: userID,
 	}).All(&projects)
 	if projectErr != nil {
-		return nil, errors.InternalServerError
+		return nil, errors.ErrInternalServerError
 	}
 
-	resolvers := make([]*projectResolver, len(projects))
-	for i, _ := range projects {
-		resolvers[i] = &projectResolver{project: &projects[i]}
+	resolvers := make([]*ProjectResolver, len(projects))
+	for i := range projects {
+		resolvers[i] = &ProjectResolver{project: &projects[i]}
 	}
 	return resolvers, nil
 }

@@ -10,6 +10,7 @@ import (
 
 var log = conf.NamedLogger("schema")
 
+// SetupSchema ...
 func SetupSchema(resolver *Resolver) (*graphql.Schema, error) {
 	schema, readErr := ioutil.ReadFile("schema.gql")
 	if readErr != nil {
@@ -21,6 +22,7 @@ func SetupSchema(resolver *Resolver) (*graphql.Schema, error) {
 	)
 }
 
+// Resolver ...
 type Resolver struct {
 	GenerateToken func(id bson.ObjectId) string
 	Config        *conf.Config

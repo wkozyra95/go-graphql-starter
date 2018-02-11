@@ -8,28 +8,33 @@ import (
 	"gopkg.in/mgo.v2/bson"
 )
 
-type userResolver struct {
+// UserResolver ...
+type UserResolver struct {
 	user *mongo.User
 }
 
-func (ur *userResolver) ID() string {
+// ID ...
+func (ur *UserResolver) ID() string {
 	return ur.user.ID.Hex()
 }
 
-func (ur *userResolver) Username() string {
+// Username ...
+func (ur *UserResolver) Username() string {
 	return ur.user.Username
 }
 
-func (ur *userResolver) Email() string {
+// Email ...
+func (ur *UserResolver) Email() string {
 	return ur.user.Email
 }
 
-func (ur *userResolver) Projects(ctx context.Context) ([]*projectResolver, error) {
+// Projects ...
+func (ur *UserResolver) Projects(ctx context.Context) ([]*ProjectResolver, error) {
 	db := extractDBSession(ctx)
 	userID := extractUserID(ctx)
 
 	if userID != ur.user.ID {
-		return nil, errors.Unauthorized
+		return nil, errors.ErrUnauthorized
 	}
 
 	projects := []mongo.Project{}
@@ -37,12 +42,12 @@ func (ur *userResolver) Projects(ctx context.Context) ([]*projectResolver, error
 		mongo.UserForeignKey: ur.user.ID,
 	}).All(&projects)
 	if projectErr != nil {
-		return nil, errors.InternalServerError
+		return nil, errors.ErrInternalServerError
 	}
 
-	resolvers := make([]*projectResolver, len(projects))
-	for i, _ := range projects {
-		resolvers[i] = &projectResolver{project: &projects[i]}
+	resolvers := make([]*ProjectResolver, len(projects))
+	for i := range projects {
+		resolvers[i] = &ProjectResolver{project: &projects[i]}
 	}
 	return resolvers, nil
 }

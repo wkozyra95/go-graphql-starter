@@ -29,7 +29,7 @@ func (a any) float() (float32, bool) {
 	return val, ok
 }
 
-func (_ any) ImplementsGraphQLType(name string) bool {
+func (a any) ImplementsGraphQLType(name string) bool {
 	return name == "Any"
 }
 

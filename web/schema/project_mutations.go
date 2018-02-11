@@ -17,7 +17,7 @@ func (r *Resolver) ProjectCreate(
 	args struct {
 		Project *projectCreateInput
 	},
-) (*projectResolver, error) {
+) (*ProjectResolver, error) {
 	userID := extractUserID(context)
 	db := extractDBSession(context)
 
@@ -27,10 +27,10 @@ func (r *Resolver) ProjectCreate(
 	project := args.Project.createProject(userID)
 	err := db.Project().Insert(project)
 	if err != nil {
-		return nil, errors.InternalServerError
+		return nil, errors.ErrInternalServerError
 	}
 
-	return &projectResolver{project: &project}, nil
+	return &ProjectResolver{project: &project}, nil
 }
 
 type projectCreateInput model.Project
@@ -53,24 +53,24 @@ func (r *Resolver) ProjectUpdate(
 	args struct {
 		Project *projectUpdateInput
 	},
-) (*projectResolver, error) {
+) (*ProjectResolver, error) {
 	userID := extractUserID(ctx)
 	db := extractDBSession(ctx)
 	projectID, projectIDErr := mongo.ConvertToObjectID(args.Project.ID)
 	if projectIDErr != nil {
-		return nil, errors.InternalServerError
+		return nil, errors.ErrInternalServerError
 	}
 
 	project := mongo.Project{}
 	getErr := db.Project().FindID(projectID).One(&project)
 	if getErr == mgo.ErrNotFound {
-		return nil, errors.NotFound
+		return nil, errors.ErrNotFound
 	}
 	if getErr != nil {
-		return nil, errors.InternalServerError
+		return nil, errors.ErrInternalServerError
 	}
 	if project.UserID != userID {
-		return nil, errors.Unauthorized
+		return nil, errors.ErrUnauthorized
 	}
 	args.Project.updateProject(&project)
 	updateErr := db.Project().UpdateID(projectID, project)
@@ -78,7 +78,7 @@ func (r *Resolver) ProjectUpdate(
 		return nil, updateErr
 	}
 
-	return &projectResolver{project: &project}, nil
+	return &ProjectResolver{project: &project}, nil
 }
 
 type projectUpdateInput struct {
@@ -100,24 +100,24 @@ func (r *Resolver) ProjectPatch(
 	args struct {
 		Project *projectPatchInput
 	},
-) (*projectResolver, error) {
+) (*ProjectResolver, error) {
 	userID := extractUserID(ctx)
 	db := extractDBSession(ctx)
 	projectID, projectIDErr := mongo.ConvertToObjectID(args.Project.ID)
 	if projectIDErr != nil {
-		return nil, errors.InternalServerError
+		return nil, errors.ErrInternalServerError
 	}
 
 	project := mongo.Project{}
 	getErr := db.Project().FindID(projectID).One(&project)
 	if getErr == mgo.ErrNotFound {
-		return nil, errors.NotFound
+		return nil, errors.ErrNotFound
 	}
 	if getErr != nil {
-		return nil, errors.InternalServerError
+		return nil, errors.ErrInternalServerError
 	}
 	if project.UserID != userID {
-		return nil, errors.Unauthorized
+		return nil, errors.ErrUnauthorized
 	}
 
 	applyErr := args.Project.apply(&project.Project)
@@ -129,7 +129,7 @@ func (r *Resolver) ProjectPatch(
 		return nil, updateErr
 	}
 
-	return &projectResolver{project: &project}, nil
+	return &ProjectResolver{project: &project}, nil
 }
 
 type projectPatchInput struct {
@@ -165,23 +165,23 @@ func (r *Resolver) ProjectDelete(
 	db := extractDBSession(ctx)
 	projectID, projectIDErr := mongo.ConvertToObjectID(args.ProjectID)
 	if projectIDErr != nil {
-		return false, errors.InternalServerError
+		return false, errors.ErrInternalServerError
 	}
 
 	project := mongo.Project{}
 	getErr := db.Project().FindID(projectID).One(&project)
 	if getErr == mgo.ErrNotFound {
-		return false, errors.NotFound
+		return false, errors.ErrNotFound
 	}
 	if getErr != nil {
-		return false, errors.InternalServerError
+		return false, errors.ErrInternalServerError
 	}
 	if project.UserID != userID {
-		return false, errors.Unauthorized
+		return false, errors.ErrUnauthorized
 	}
 
 	if err := db.Project().RemoveID(projectID); err != nil {
-		return false, errors.InternalServerError
+		return false, errors.ErrInternalServerError
 	}
 
 	return true, nil

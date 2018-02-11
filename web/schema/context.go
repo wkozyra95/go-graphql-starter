@@ -8,9 +8,13 @@ import (
 	"gopkg.in/mgo.v2/bson"
 )
 
+// ContextKey ...
 type ContextKey string
 
+// CurrentUserKey ...
 var CurrentUserKey ContextKey = "CurrentUser"
+
+// DBSessionKey ...
 var DBSessionKey ContextKey = "DBSessionKey"
 
 func extractDBSession(ctx context.Context) mongo.DB {
@@ -34,7 +38,7 @@ func extractUserID(ctx context.Context) bson.ObjectId {
 	}
 	userID, assertOk := userIDObj.(bson.ObjectId)
 	if !assertOk {
-		log.Error("[ASSERT] Wrong type for userID in contex [%+v]", userIDObj)
+		log.Errorf("[ASSERT] Wrong type for userID in contex [%+v]", userIDObj)
 		debug.PrintStack()
 	}
 	return userID
