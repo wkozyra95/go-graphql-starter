@@ -40,7 +40,7 @@ elif [ "$1" = "run:dev" ]; then
     ensureStartDB
     export DB_URL=mongodb://localhost:27017/go-graphql-starter
     export BACKEND_PORT=3001
-    gin
+    gin -i
 
 elif [ "$1" = "setup" ]; then
     cd $SCRIPT_PATH

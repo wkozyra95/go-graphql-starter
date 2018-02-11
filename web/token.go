@@ -8,14 +8,14 @@ import (
 
 	"github.com/dgrijalva/jwt-go"
 	conf "github.com/wkozyra95/go-graphql-starter/config"
-	"github.com/wkozyra95/go-graphql-starter/model/db"
+	"github.com/wkozyra95/go-graphql-starter/model/mongo"
 	"github.com/wkozyra95/go-graphql-starter/web/schema"
 	"gopkg.in/mgo.v2/bson"
 )
 
 type contextKeyType string
 
-const contextUserID contextKeyType = "userId"
+const contextUserID contextKeyType = "userID"
 
 type jwtProvider struct {
 	jwtKey []byte
@@ -84,7 +84,7 @@ func (jp jwtProvider) middleware(next http.Handler) http.Handler {
 			return
 		}
 
-		converted, convertErr := db.ConvertToObjectId(claims["id"].(string))
+		converted, convertErr := mongo.ConvertToObjectID(claims["id"].(string))
 		if convertErr != nil {
 			next.ServeHTTP(w, r)
 			return
@@ -94,7 +94,6 @@ func (jp jwtProvider) middleware(next http.Handler) http.Handler {
 		idVal := converted
 
 		ctx := context.WithValue(r.Context(), idKey, idVal)
-		log.Debugf("Authenticated request for user [%s]", idVal)
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }

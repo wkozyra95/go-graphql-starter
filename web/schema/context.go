@@ -4,7 +4,7 @@ import (
 	"context"
 	"runtime/debug"
 
-	"github.com/wkozyra95/go-graphql-starter/model/db"
+	"github.com/wkozyra95/go-graphql-starter/model/mongo"
 	"gopkg.in/mgo.v2/bson"
 )
 
@@ -13,13 +13,13 @@ type ContextKey string
 var CurrentUserKey ContextKey = "CurrentUser"
 var DBSessionKey ContextKey = "DBSessionKey"
 
-func extractDBSession(ctx context.Context) db.DB {
+func extractDBSession(ctx context.Context) mongo.DB {
 	dbSessionObj := ctx.Value(DBSessionKey)
 	if dbSessionObj == nil {
 		log.Error("[ASSERT] Missing db session in context")
 		debug.PrintStack()
 	}
-	dbSession, assertOk := dbSessionObj.(db.DB)
+	dbSession, assertOk := dbSessionObj.(mongo.DB)
 	if !assertOk {
 		log.Error("[ASSERT] Wrong type for db session")
 		debug.PrintStack()
@@ -27,15 +27,15 @@ func extractDBSession(ctx context.Context) db.DB {
 	return dbSession
 }
 
-func extractUserIdContext(ctx context.Context) bson.ObjectId {
-	userIdObj := ctx.Value(CurrentUserKey)
-	if userIdObj == nil {
+func extractUserID(ctx context.Context) bson.ObjectId {
+	userIDObj := ctx.Value(CurrentUserKey)
+	if userIDObj == nil {
 		return ""
 	}
-	userId, assertOk := userIdObj.(bson.ObjectId)
+	userID, assertOk := userIDObj.(bson.ObjectId)
 	if !assertOk {
-		log.Error("[ASSERT] Wrong type for userId in contex [%+v]", userIdObj)
+		log.Error("[ASSERT] Wrong type for userID in contex [%+v]", userIDObj)
 		debug.PrintStack()
 	}
-	return userId
+	return userID
 }

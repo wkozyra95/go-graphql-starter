@@ -1,0 +1,94 @@
+
+schema {
+    query: Query
+    mutation: Mutation
+}
+
+# Query
+type Query {
+    project(projectId: String!): Project!
+    projects: [Project!]!
+}
+
+# Mutation
+type Mutation {
+    authLogin(loginForm: LoginForm!): LoginResponse!
+    authRegister(registerForm: RegisterForm!): User!
+
+    projectCreate(project: ProjectCreateInput!): Project!
+    projectUpdate(project: ProjectUpdateInput!): Project!
+    projectPatch(project: ProjectPatchInput!): Project!
+    projectDelete(projectId: String!): Boolean!
+}
+
+scalar Any
+
+input UpdatePatch {
+    field: String!
+    value: Any!
+}
+
+# LoginForm
+input LoginForm {
+    username: String!
+    password: String!
+}
+# RegisterForm
+input RegisterForm {
+    email: String!,
+    username: String!,
+    password: String!,
+}
+
+# LoginResponse
+type LoginResponse {
+    token: String!
+    user: User!
+}
+# User
+type User {
+    id: String!
+    username: String!
+    email: String!
+    projects: [Project!]!
+}
+
+
+# ProjectCreateInput
+input ProjectCreateInput {
+    name: String!
+    description: String!
+    details: ProjectDetailsInput!
+}
+# ProjectUpdateInput
+input ProjectUpdateInput {
+    id: String!
+    name: String!
+    description: String!
+    details: ProjectDetailsInput!
+}
+# ProjectPatchInput
+input ProjectPatchInput {
+    id: String!
+    patch: [UpdatePatch!]!
+}
+# ProjectDetailsInput
+input ProjectDetailsInput {
+    isPublic: Boolean!
+    projectType: String!
+}
+
+# Project
+type Project {
+    id: String!
+    user: User!
+    name: String!
+    description: String!
+    details: ProjectDetails!
+}
+# ProjectDetails
+type ProjectDetails {
+    isPublic: Boolean!
+    projectType: String!
+}
+

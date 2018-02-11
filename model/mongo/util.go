@@ -1,15 +1,15 @@
-package db
+package mongo
 
 import (
 	"github.com/wkozyra95/go-graphql-starter/errors"
 	"gopkg.in/mgo.v2/bson"
 )
 
-func ConvertToObjectId(id string) (binaryId bson.ObjectId, convertErr error) {
+func ConvertToObjectID(id string) (binaryID bson.ObjectId, convertErr error) {
 	defer func() {
 		if err := recover(); err != nil {
-			binaryId = ""
-			convertErr = errors.NotFound
+			binaryID = ""
+			convertErr = errors.Malformed
 		}
 	}()
 	return bson.ObjectIdHex(id), nil
@@ -17,7 +17,7 @@ func ConvertToObjectId(id string) (binaryId bson.ObjectId, convertErr error) {
 
 func ValidateReadRights(
 	id bson.ObjectId,
-	userId bson.ObjectId,
+	userID bson.ObjectId,
 	collection Collection,
 ) (bool, error) {
 	document := Document{}
@@ -27,14 +27,14 @@ func ValidateReadRights(
 	}
 
 	if document.UserID == "" {
-		return document.ID == userId, nil
+		return document.ID == userID, nil
 	}
-	return document.UserID == userId, nil
+	return document.UserID == userID, nil
 }
 
 func ValidateWriteRights(
 	id bson.ObjectId,
-	userId bson.ObjectId,
+	userID bson.ObjectId,
 	collection Collection,
 ) (bool, error) {
 	document := Document{}
@@ -43,7 +43,7 @@ func ValidateWriteRights(
 		return false, documentErr
 	}
 	if document.UserID == "" {
-		return document.ID == userId, nil
+		return document.ID == userID, nil
 	}
-	return document.UserID == userId, nil
+	return document.UserID == userID, nil
 }

@@ -4,11 +4,11 @@ import (
 	"context"
 	"net/http"
 
-	database "github.com/wkozyra95/go-graphql-starter/model/db"
+	"github.com/wkozyra95/go-graphql-starter/model/mongo"
 	"github.com/wkozyra95/go-graphql-starter/web/schema"
 )
 
-type dbProvider func() database.DB
+type dbProvider func() mongo.DB
 
 func (p dbProvider) middleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -20,7 +20,6 @@ func (p dbProvider) middleware(next http.Handler) http.Handler {
 			schema.DBSessionKey,
 			db,
 		)
-		log.Info("middleware")
 		updatedRequest := r.WithContext(newCtx)
 		next.ServeHTTP(w, updatedRequest)
 	})

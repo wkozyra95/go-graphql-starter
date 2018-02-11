@@ -1,5 +1,5 @@
-// Package db implements database module.
-package db
+// Package mongo implements database module.
+package mongo
 
 import (
 	conf "github.com/wkozyra95/go-graphql-starter/config"
@@ -7,7 +7,7 @@ import (
 	"gopkg.in/mgo.v2/bson"
 )
 
-var log = conf.NamedLogger("db")
+var log = conf.NamedLogger("mongo")
 
 // OR query tag.
 const OR = "$or"

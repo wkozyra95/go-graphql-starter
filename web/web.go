@@ -9,7 +9,7 @@ import (
 	"github.com/go-chi/chi"
 	"github.com/neelance/graphql-go/relay"
 	conf "github.com/wkozyra95/go-graphql-starter/config"
-	"github.com/wkozyra95/go-graphql-starter/model/db"
+	"github.com/wkozyra95/go-graphql-starter/model/mongo"
 	"github.com/wkozyra95/go-graphql-starter/web/schema"
 )
 
@@ -17,7 +17,7 @@ var log = conf.NamedLogger("web")
 
 // NewRouter ...
 func NewRouter(config conf.Config) (http.Handler, error) {
-	dbCreator, dbErr := db.SetupDB(config)
+	dbCreator, dbErr := mongo.SetupDB(config)
 	if dbErr != nil {
 		log.Error(dbErr.Error())
 		return nil, dbErr

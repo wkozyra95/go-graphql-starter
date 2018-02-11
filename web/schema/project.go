@@ -5,47 +5,53 @@ import (
 
 	"github.com/wkozyra95/go-graphql-starter/errors"
 	"github.com/wkozyra95/go-graphql-starter/model"
+	"github.com/wkozyra95/go-graphql-starter/model/mongo"
 )
 
 type projectResolver struct {
-	project *model.Project
-	errors  *model.ProjectError
+	project *mongo.Project
 }
 
 func (pr *projectResolver) ID() string {
 	return pr.project.ID.Hex()
 }
 
-func (pr *projectResolver) Name() (string, error) {
-	if pr.errors != nil && pr.errors.Name != nil {
-		return "", pr.errors.Name
-	}
-	if pr.project == nil {
-		return "", errors.InternalServerError
-	}
-	return pr.project.Name, nil
+func (pr *projectResolver) Name() string {
+	return pr.project.Name
 }
 
-func (pr *projectResolver) Description() (string, error) {
-	if pr.errors != nil && pr.errors.Description != nil {
-		return "", pr.errors.Description
+func (pr *projectResolver) Description() string {
+	return pr.project.Description
+}
+
+func (pr *projectResolver) Details() *projectDetailsResolver {
+	return &projectDetailsResolver{
+		details: &pr.project.Details,
 	}
-	if pr.project == nil {
-		return "", errors.InternalServerError
-	}
-	return pr.project.Description, nil
+}
+
+type projectDetailsResolver struct {
+	details *model.ProjectDetails
+}
+
+func (pr *projectDetailsResolver) IsPublic() bool {
+	return pr.details.IsPublic
+}
+
+func (pr *projectDetailsResolver) ProjectType() string {
+	return pr.details.ProjectType
 }
 
 func (pr *projectResolver) User(ctx context.Context) (*userResolver, error) {
 	db := extractDBSession(ctx)
-	userId := extractUserIdContext(ctx)
+	userID := extractUserID(ctx)
 
-	user := model.User{}
+	user := mongo.User{}
 	dbErr := db.User().FindID(pr.project.UserID).One(&user)
 	if dbErr != nil {
 		return nil, errors.InternalServerError
 	}
-	if user.ID != userId {
+	if user.ID != userID {
 		return nil, errors.Unauthorized
 	}
 	return &userResolver{user: &user}, nil

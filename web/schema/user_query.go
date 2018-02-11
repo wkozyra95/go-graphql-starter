@@ -3,7 +3,7 @@ package schema
 import (
 	"context"
 
-	"github.com/wkozyra95/go-graphql-starter/model"
+	"github.com/wkozyra95/go-graphql-starter/model/mongo"
 )
 
 func (r Resolver) User(
@@ -12,5 +12,5 @@ func (r Resolver) User(
 		Username string
 	},
 ) (*userResolver, error) {
-	return &userResolver{user: &model.User{}}, nil
+	return &userResolver{user: &mongo.User{}}, nil
 }

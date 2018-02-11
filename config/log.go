@@ -9,9 +9,11 @@ import (
 // NamedLogger creates named package logger.
 func NamedLogger(name string) logrus.Logger {
 	return logrus.Logger{
-		Out:       os.Stderr,
-		Formatter: &logrus.TextFormatter{},
-		Hooks:     make(logrus.LevelHooks),
-		Level:     logrus.DebugLevel,
+		Out: os.Stderr,
+		Formatter: &logrus.TextFormatter{
+			ForceColors: true,
+		},
+		Hooks: make(logrus.LevelHooks),
+		Level: logrus.DebugLevel,
 	}
 }
